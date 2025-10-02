@@ -10,18 +10,23 @@ public class Draggable : MonoBehaviour
     Vector3 initialPos;
 
     private Collider2D myCollider;
+    private SpriteRenderer sp;
+    private int defLayer;
 
     void Start()
     {
         initialPos = transform.position;
         myCollider = GetComponent<Collider2D>();
+        sp = GetComponent<SpriteRenderer>();
+        defLayer = sp.sortingOrder;
     }
 
     private void OnMouseDown()
     {
         mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         offset = transform.position - mousePos;
-        if (myCollider != null) myCollider.enabled = false;
+        myCollider.enabled = false;
+        sp.sortingOrder = 50; // Bring to front while dragging
     }
 
     private void OnMouseDrag()
@@ -32,34 +37,39 @@ public class Draggable : MonoBehaviour
 
     private void OnMouseUp()
     {
-        if (myCollider != null) myCollider.enabled = true;
-
         ray = Physics2D.Raycast(transform.position, Vector3.zero);
-
 
         if (ray)
         {
             if (ray.transform.GetComponent<Collider2D>())
             {
+                Transform obj = ray.transform.gameObject.transform;
                 //Debug.Log("Dropped: " + ray.transform.gameObject.name);
                 var cell = ray.transform.GetComponent<Collider2D>();
                 Debug.Log("Dropped: " + cell.gameObject.name);
-
+          
                 UIController.Instance.AddScore(1);
 
 
                 GameObject originalToClone = gameObject;
-                GameObject clone = Instantiate(originalToClone, cell.transform.position, Quaternion.identity);
+                GameObject clone = Instantiate(originalToClone,obj);
+                clone.transform.localPosition = Vector3.zero;
+
+                obj.GetComponent<Collider2D>().enabled = false; 
 
                 clone.transform.localScale = Vector3.one * 0.8f;
 
                 transform.position = initialPos;
+                sp.sortingOrder = defLayer;
+                myCollider.enabled = true;
             }
         }
         else
         {
             Debug.Log("No cell found");
             transform.position = initialPos;
+            sp.sortingOrder = defLayer;
+            myCollider.enabled = true;
         }
     }
 
