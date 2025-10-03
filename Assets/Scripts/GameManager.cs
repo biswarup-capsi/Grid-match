@@ -8,6 +8,7 @@ public class UIController : MonoBehaviour
     [Header("UI Elements")]
     public GameObject startPanel;
     public GameObject nextPanel;
+    public GameObject pausePanel;
     public GameObject overPanel;
 
     [SerializeField]
@@ -15,6 +16,8 @@ public class UIController : MonoBehaviour
 
     [SerializeField]
     private TextMeshProUGUI levelText;
+
+    public TextMeshProUGUI LevelText => levelText;
 
     public GameState currentState = GameState.NotRunning;
 
@@ -28,7 +31,7 @@ public class UIController : MonoBehaviour
 
     private void Awake()
     {
-         Instance = this;
+        Instance = this;
 
     }
 
@@ -40,27 +43,20 @@ public class UIController : MonoBehaviour
 
     private void Update()
     {
-        if(Input.GetKeyDown(KeyCode.Escape))
+        if (Input.GetKeyDown(KeyCode.Escape))
         {
             if (currentState == GameState.Running)
                 PauseGame();
             else if (currentState == GameState.Paused)
                 ResumeGame();
         }
-
-        if(score < 0)
-        {
-            GameOver();
-        }
     }
 
     public void ResetGame()
     {
+        GridSpawner.Instance.ResetGrid();
         currentState = GameState.Running;
         Time.timeScale = 1f;
-        score = 0;
-        level = 1;
-        scoreThreshold = 10;
         scoreText.text = "Score: " + score;
         levelText.text = "Level: " + level;
         UpdateUI();
@@ -69,17 +65,27 @@ public class UIController : MonoBehaviour
 
     public void PauseGame()
     {
+
         currentState = GameState.Paused;
         Time.timeScale = 0f;
         UpdateUI();
     }
 
+
     public void ResumeGame()
     {
+        if (currentState == GameState.Over)
+        {
+            ResetGame();
+            return;
+        }
+
         currentState = GameState.Running;
         Time.timeScale = 1f;
         UpdateUI();
     }
+
+
 
     public void GameOver()
     {
@@ -99,20 +105,20 @@ public class UIController : MonoBehaviour
         if (score >= scoreThreshold)
         {
             scoreThreshold += 10;
-            levelText.text = "Level: " + (++level);
+            //levelText.text = "Level: " + (++level);
         }
     }
 
     private void UpdateUI()
     {
         if (currentState == GameState.Paused)
-            ShowNextPanel();
+            ShowPausePanel();
         else if (currentState == GameState.Over)
             ShowOverPanel();
         else if (currentState == GameState.NotRunning)
             ShowStartPanel();
         else if (currentState == GameState.Running)
-            DisableAllPanels(); 
+            DisableAllPanels();
     }
 
     public void DisableAllPanels()
@@ -120,6 +126,8 @@ public class UIController : MonoBehaviour
         startPanel.SetActive(false);
         nextPanel.SetActive(false);
         overPanel.SetActive(false);
+        pausePanel.SetActive(false);
+
         Debug.Log("All Panels Disabled");
     }
 
@@ -128,12 +136,23 @@ public class UIController : MonoBehaviour
         startPanel.SetActive(true);
         nextPanel.SetActive(false);
         overPanel.SetActive(false);
+        nextPanel.SetActive(false);
+
     }
 
-    public void ShowNextPanel()
+    public void ShowPausePanel()
+    {
+        startPanel.SetActive(false);
+        nextPanel.SetActive(false);
+        pausePanel.SetActive(true);
+        overPanel.SetActive(false);
+    }
+
+    public void ShowLevelPanel()
     {
         startPanel.SetActive(false);
         nextPanel.SetActive(true);
+        pausePanel.SetActive(false);
         overPanel.SetActive(false);
     }
 
@@ -142,6 +161,8 @@ public class UIController : MonoBehaviour
         startPanel.SetActive(false);
         nextPanel.SetActive(false);
         overPanel.SetActive(true);
+        nextPanel.SetActive(false);
+
     }
 
     public void Quit()
@@ -154,6 +175,7 @@ public class UIController : MonoBehaviour
 public enum GameState
 {
     NotRunning,
+    NextLevel,
     Running,
     Paused,
     Over

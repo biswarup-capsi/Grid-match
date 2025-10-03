@@ -41,36 +41,45 @@ public class Draggable : MonoBehaviour
 
         if (ray)
         {
-            if (ray.transform.GetComponent<Collider2D>())
+            Cell cell = ray.transform.GetComponent<Cell>();
+            if (cell != null && !cell.IsOccupied)
             {
-                Transform obj = ray.transform.gameObject.transform;
-                //Debug.Log("Dropped: " + ray.transform.gameObject.name);
-                var cell = ray.transform.GetComponent<Collider2D>();
-                Debug.Log("Dropped: " + cell.gameObject.name);
-          
+                Debug.Log("Dropped on: " + cell.gameObject.name);
+
                 UIController.Instance.AddScore(1);
 
-
                 GameObject originalToClone = gameObject;
-                GameObject clone = Instantiate(originalToClone,obj);
+                GameObject clone = Instantiate(originalToClone, cell.transform);
                 clone.transform.localPosition = Vector3.zero;
-
-                obj.GetComponent<Collider2D>().enabled = false; 
-
                 clone.transform.localScale = Vector3.one * 0.8f;
 
+                // Tell the cell it’s occupied
+                cell.OccupyCell(clone);
+
+                // Reset draggable back to start
                 transform.position = initialPos;
                 sp.sortingOrder = defLayer;
                 myCollider.enabled = true;
+            }
+            else
+            {
+                Debug.Log("Cell already occupied");
+                ResetPosition();
             }
         }
         else
         {
             Debug.Log("No cell found");
-            transform.position = initialPos;
-            sp.sortingOrder = defLayer;
-            myCollider.enabled = true;
+            ResetPosition();
         }
     }
+
+    private void ResetPosition()
+    {
+        transform.position = initialPos;
+        sp.sortingOrder = defLayer;
+        myCollider.enabled = true;
+    }
+
 
 }
