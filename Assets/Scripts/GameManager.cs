@@ -1,5 +1,6 @@
 using TMPro;
 using UnityEngine;
+using CandyCoded.HapticFeedback;
 
 public class UIController : MonoBehaviour
 {
@@ -31,6 +32,7 @@ public class UIController : MonoBehaviour
 
     private void Awake()
     {
+        Screen.fullScreen=false;
         Instance = this;
 
     }
@@ -89,6 +91,7 @@ public class UIController : MonoBehaviour
 
     public void GameOver()
     {
+        Handheld.Vibrate();
         currentState = GameState.Over;
         Time.timeScale = 0f;
         UpdateUI();
@@ -102,6 +105,7 @@ public class UIController : MonoBehaviour
 
     public void UpdateLevel()
     {
+        HapticFeedback.HeavyFeedback();
         if (score >= scoreThreshold)
         {
             scoreThreshold += 10;

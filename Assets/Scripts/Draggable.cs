@@ -1,5 +1,7 @@
 using UnityEngine;
+using UnityEngine.InputSystem.XR.Haptics;
 //using DG.Tweening; // Optional: For jelly bounce (install DOTween via Package Manager if wanted; fallback to simple scale).
+using CandyCoded.HapticFeedback;
 
 public class Draggable : MonoBehaviour
 {
@@ -49,9 +51,16 @@ public class Draggable : MonoBehaviour
                 UIController.Instance.AddScore(1);
 
                 GameObject originalToClone = gameObject;
-                GameObject clone = Instantiate(originalToClone, cell.transform);
+                //GameObject clone = Instantiate(originalToClone, cell.transform);
+                //clone.transform.localPosition = Vector3.zero;
+                //clone.transform.localScale = Vector3.one * 0.8f;
+                GameObject clone = Instantiate(originalToClone, Vector3.zero, Quaternion.identity);
+                clone.transform.SetParent(cell.transform);
                 clone.transform.localPosition = Vector3.zero;
                 clone.transform.localScale = Vector3.one * 0.8f;
+                AudioManager.Instance.PlayDropSound();
+                HapticFeedback.MediumFeedback();
+
 
                 // Tell the cell it’s occupied
                 cell.OccupyCell(clone);
